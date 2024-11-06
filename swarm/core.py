@@ -1,14 +1,9 @@
-# Standard library imports
 import copy
 import json
+import time
 from collections import defaultdict
 from typing import List, Callable, Union
-
-# Package/library imports
 from openai import OpenAI
-
-
-# Local imports
 from .util import function_to_json, debug_print, merge_chunk
 from .types import (
     Agent,
@@ -21,34 +16,25 @@ from .types import (
 )
 
 __CTX_VARS_NAME__ = "context_variables"
-
+DEFAULT_TIMEOUT = 10  # Timeout for API calls in seconds
 
 class Swarm:
-    def __init__(self, client=None):
+    def __init__(self, client=None, debug=False):
         if not client:
             client = OpenAI()
         self.client = client
+        self.debug = debug
+        self.context_log = {}  # Log context variable changes
 
     def get_chat_completion(
-        self,
-        agent: Agent,
-        history: List,
-        context_variables: dict,
-        model_override: str,
-        stream: bool,
-        debug: bool,
-    ) -> ChatCompletionMessage:
+        self, agent, history, context_variables, model_override, stream, timeout=None
+    ):
         context_variables = defaultdict(str, context_variables)
-        instructions = (
-            agent.instructions(context_variables)
-            if callable(agent.instructions)
-            else agent.instructions
-        )
+        instructions = agent.instructions(context_variables) if callable(agent.instructions) else agent.instructions
         messages = [{"role": "system", "content": instructions}] + history
-        debug_print(debug, "Getting chat completion for...:", messages)
+        debug_print(self.debug, "Getting chat completion for...:", messages)
 
         tools = [function_to_json(f) for f in agent.functions]
-        # hide context_variables from model
         for tool in tools:
             params = tool["function"]["parameters"]
             params["properties"].pop(__CTX_VARS_NAME__, None)
@@ -66,7 +52,21 @@ class Swarm:
         if tools:
             create_params["parallel_tool_calls"] = agent.parallel_tool_calls
 
-        return self.client.chat.completions.create(**create_params)
+        try:
+            start_time = time.time()
+            result = self.client.chat.completions.create(
+                **create_params, timeout=timeout or DEFAULT_TIMEOUT
+            )
+            debug_print(self.debug, "Chat completion received in", time.time() - start_time, "seconds.")
+            return result
+        except Exception as e:
+            debug_print(self.debug, "Error during chat completion:", str(e))
+            raise RuntimeError("Chat completion failed.") from e
+
+    def update_context_variables(self, context_variables, new_data):
+        for key, value in new_data.items():
+            context_variables[key] = value
+            self.context_log[key] = value
 
     def handle_function_result(self, result, debug) -> Result:
         match result:
@@ -174,6 +174,7 @@ class Swarm:
                 context_variables=context_variables,
                 model_override=model_override,
                 stream=True,
+                timeout=DEFAULT_TIMEOUT,
                 debug=debug,
             )
 
