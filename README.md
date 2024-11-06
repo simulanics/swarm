@@ -75,7 +75,7 @@ What can I assist?
 
 Swarm focuses on making agent **coordination** and **execution** lightweight, highly controllable, and easily testable.
 
-It accomplishes this through two primitive abstractions: `Agent`s and **handoffs**. An `Agent` encompasses `instructions` and `tools`, and can at any point choose to hand off a conversation to another `Agent`.
+It accomplishes this through two primitive abstractions: `Agents` and **handoffs**. An `Agent` encompasses `instructions` and `tools`, and can at any point choose to hand off a conversation to another `Agent`.
 
 These primitives are powerful enough to express rich dynamics between tools and networks of agents, allowing you to build scalable, real-world solutions while avoiding a steep learning curve.
 
