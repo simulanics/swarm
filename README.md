@@ -1,6 +1,6 @@
 ![Swarm Logo](assets/logo.png)
 
-# Swarm (experimental, educational)
+# Swarm
 
 An educational framework exploring ergonomic, lightweight multi-agent orchestration.
 
