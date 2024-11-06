@@ -349,7 +349,10 @@ from swarm.repl import run_demo_loop
 run_demo_loop(agent, stream=True)
 ```
 
-# Core Contributors
+# Core Contributor of this Repository
+- Matthew Combatti - [simulanics](https://github.com/simulanics)
+
+# Core Contributors of Original Framework
 
 - Ilan Bigio - [ibigio](https://github.com/ibigio)
 - James Hills - [jhills20](https://github.com/jhills20)
