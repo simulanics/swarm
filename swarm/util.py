@@ -1,14 +1,14 @@
 import inspect
 from datetime import datetime
 
-
-def debug_print(debug: bool, *args: str) -> None:
+def debug_print(debug: bool, *args: str, log_file: str = "swarm_debug.log") -> None:
     if not debug:
         return
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     message = " ".join(map(str, args))
     print(f"\033[97m[\033[90m{timestamp}\033[97m]\033[90m {message}\033[0m")
-
+    with open(log_file, "a") as f:
+        f.write(f"[{timestamp}] {message}\n")
 
 def merge_fields(target, source):
     for key, value in source.items():
